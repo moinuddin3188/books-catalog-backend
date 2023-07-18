@@ -1,4 +1,5 @@
-import mongoose, { Model } from "mongoose";
+import mongoose, { Model, ObjectId } from "mongoose";
+import { IBook } from "../book/book.interface";
 
 export type UserName = {
   firstName: string;
@@ -7,14 +8,19 @@ export type UserName = {
 
 export type UserRole = "user" | "admin";
 
+type IList = {
+  book: ObjectId | IBook
+  status: "reading" | "will read" | "finished reading"
+}
+
 export type IUser = {
   name: UserName;
   email: string;
   password: string;
   role: UserRole;
-  phoneNumber?: string;
-  address?: string;
   avatar?: string;
+  wishList?: ObjectId[] | IBook
+  myList?: IList[]
 };
 
 export type UserModel = {

@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Schema, Types, model } from "mongoose";
 import { IUser, UserModel } from "./user.interface";
 import { userRole } from "./user.constants";
 import bcrypt from "bcrypt";
@@ -28,21 +28,34 @@ const userSchema = new Schema<IUser>(
       required: true,
       select: 0,
     },
-    phoneNumber: {
-      type: String,
-      unique: true,
-    },
     role: {
       type: String,
       enum: userRole,
       required: true,
     },
-    address: {
-      type: String,
-    },
     avatar: {
       type: String,
-    }
+    },
+    wishList: [
+      {
+        type: Types.ObjectId,
+        ref: "Book",
+        default: [],
+      },
+    ],
+    myList: [
+      {
+        book: {
+          type: Types.ObjectId,
+          ref: "Book",
+        },
+        status: {
+          type: String,
+          enum: ["reading", "will read", "finished reading"],
+          default: "will read"
+        },
+      },
+    ],
   },
   {
     timestamps: true,

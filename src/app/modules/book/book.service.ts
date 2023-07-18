@@ -51,6 +51,12 @@ const addBook = async (payload: IBook): Promise<IBook> => {
   return newBookAllData;
 };
 
+const getRecentBooks = async (): Promise<IBook[]> => {
+  const books = await Book.find({}).sort({ createdAt: -1 }).limit(10);
+
+  return books;
+};
+
 const getAllBook = async (filters: IBookFilters): Promise<IBook[]> => {
   const { searchTerm, sortBy, sortOrder, ...filtersData } = filters;
 
@@ -89,7 +95,7 @@ const getAllBook = async (filters: IBookFilters): Promise<IBook[]> => {
 };
 
 const getSingleBook = async (payload: string): Promise<IBook | null> => {
-  const book = await Book.findOne({id: payload});
+  const book = await Book.findOne({ id: payload });
 
   return book;
 };
@@ -98,13 +104,13 @@ const updateBook = async (
   id: string,
   payload: Partial<IBook>
 ): Promise<IBook | null> => {
-  const isExist = await Book.findOne({id});
+  const isExist = await Book.findOne({ id });
 
   if (!isExist) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Book doesn't exist");
   }
 
-  const updatedBook = await Book.findByIdAndUpdate(id, payload, {
+  const updatedBook = await Book.findOneAndUpdate({ id }, payload, {
     new: true,
   });
 
@@ -112,13 +118,33 @@ const updateBook = async (
 };
 
 const deleteBook = async (id: string): Promise<IBook | null> => {
-  // const isAuthorized = await Book.findOne({_id: id, seller: userId})
+  let deletedBook = null;
 
-  // if(!isAuthorized){
-  //   throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized to delete this cow!")
-  // }
+  const session = await mongoose.startSession();
 
-  const deletedBook = await Book.findOneAndDelete({id});
+  try {
+    session.startTransaction();
+
+    deletedBook = await Book.findOneAndDelete({ id }, { session });
+
+    if (!deleteBook) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "failed to delete");
+    }
+
+    const deleteReview = await Review.findOneAndDelete({ id }, { session });
+
+    if (!deleteReview) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "failed to delete");
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+  } catch (error) {
+    session.abortTransaction;
+    session.endSession();
+
+    throw error;
+  }
 
   return deletedBook;
 };
@@ -126,6 +152,7 @@ const deleteBook = async (id: string): Promise<IBook | null> => {
 export const BookService = {
   addBook,
   getAllBook,
+  getRecentBooks,
   getSingleBook,
   updateBook,
   deleteBook,

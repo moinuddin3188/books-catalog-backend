@@ -6,6 +6,7 @@ const bookSchema = new Schema<IBook>(
     id: {
       type: String,
       required: true,
+      unique: true
     },
     title: {
       type: String,
@@ -13,11 +14,6 @@ const bookSchema = new Schema<IBook>(
     },
     author: {
       type: String,
-      required: true,
-    },
-    uploadedBy: {
-      type: Types.ObjectId,
-      ref: "User",
       required: true,
     },
     imageUrl: {

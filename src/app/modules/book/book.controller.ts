@@ -22,9 +22,8 @@ const addBook = catchAsync(async (req: Request, res: Response) => {
 
 const getAllBook = catchAsync(async (req: Request, res: Response) => {
   const query = pick(req.query, bookFilterableFields);
-  const body = pick(req.query, bookFilterableFields);
 
-  const filters = { ...query, ...body };
+  const filters = { ...query };
 
   const result = await BookService.getAllBook(filters);
 
@@ -32,6 +31,17 @@ const getAllBook = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Books retrieved successfully!",
+    data: result,
+  });
+});
+
+const getRecentBooks = catchAsync(async (req: Request, res: Response) => {
+  const result = await BookService.getRecentBooks();
+
+  sendResponse<IBook[]>(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Book retrieved successfully!",
     data: result,
   });
 });
@@ -79,6 +89,7 @@ const deleteBook = catchAsync(async (req: Request, res: Response) => {
 export const BookController = {
   addBook,
   getAllBook,
+  getRecentBooks,
   getSingleBook,
   updateBook,
   deleteBook,

@@ -4,7 +4,6 @@ export type IBook = {
   id: string;
   title: string;
   author: string;
-  uploadedBy: ObjectId;
   publicationYear: number;
   genre: string[];
   price: number;
